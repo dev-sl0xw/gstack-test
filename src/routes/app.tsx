@@ -9,6 +9,7 @@ import { fetchOgMeta } from "../lib/og-fetch.ts";
 import { signToken, verifyToken } from "../lib/csrf.ts";
 import { requireAuth, type AuthVars } from "../middleware/auth.ts";
 import { Dashboard, type DashBookmark } from "../views/dashboard.tsx";
+import { BookmarkEdit } from "../views/bookmark-edit.tsx";
 
 const CSRF_SECRET = process.env.CSRF_SECRET!;
 
@@ -90,4 +91,72 @@ appRoutes.post("/bookmarks", async (c) => {
   });
 
   return c.redirect("/app?flash=added", 302);
+});
+
+appRoutes.post("/bookmarks/:id/delete", async (c) => {
+  const user = c.get("user")!;
+  const id = c.req.param("id");
+  const form = await c.req.parseBody();
+  if (!verifyToken(String(form._csrf ?? ""), c.get("sessionId")!, CSRF_SECRET)) {
+    return c.text("forbidden", 403);
+  }
+  await db.delete(bookmarks).where(and(eq(bookmarks.id, id), eq(bookmarks.userId, user.id)));
+  return c.redirect("/app?flash=deleted", 302);
+});
+
+appRoutes.get("/bookmarks/:id/edit", async (c) => {
+  const user = c.get("user")!;
+  const id = c.req.param("id");
+  const [row] = await db.select().from(bookmarks)
+    .where(and(eq(bookmarks.id, id), eq(bookmarks.userId, user.id)));
+  if (!row) return c.notFound();
+  const tagLinks = await db.select({ name: tags.name }).from(bookmarkTags)
+    .innerJoin(tags, eq(bookmarkTags.tagId, tags.id))
+    .where(eq(bookmarkTags.bookmarkId, id));
+  const csrfToken = signToken(c.get("sessionId")!, CSRF_SECRET);
+  return c.html(<BookmarkEdit
+    b={{
+      id: row.id, url: row.url, title: row.title,
+      description: row.description, isPublic: row.isPublic,
+      tags: tagLinks.map(t => t.name),
+    }}
+    csrfToken={csrfToken}
+  />);
+});
+
+appRoutes.post("/bookmarks/:id", async (c) => {
+  const user = c.get("user")!;
+  const id = c.req.param("id");
+  const form = await c.req.parseBody();
+  if (!verifyToken(String(form._csrf ?? ""), c.get("sessionId")!, CSRF_SECRET)) {
+    return c.text("forbidden", 403);
+  }
+  const title = String(form.title ?? "").trim().slice(0, 200);
+  const description = String(form.description ?? "").trim().slice(0, 500) || null;
+  const tagsStr = String(form.tags ?? "");
+  const isPublic = form.is_public === "on" ? 1 : 0;
+  if (!title) return c.redirect(`/app/bookmarks/${id}/edit`, 302);
+
+  await db.transaction(async (tx) => {
+    const [own] = await tx.select({ id: bookmarks.id }).from(bookmarks)
+      .where(and(eq(bookmarks.id, id), eq(bookmarks.userId, user.id)));
+    if (!own) return;
+    await tx.update(bookmarks)
+      .set({ title, description, isPublic, updatedAt: now() })
+      .where(eq(bookmarks.id, id));
+    await tx.delete(bookmarkTags).where(eq(bookmarkTags.bookmarkId, id));
+    const tagNames = tagsStr.split(",").map(s => s.trim().toLowerCase())
+      .filter(s => s.length > 0 && s.length <= 30);
+    for (const name of tagNames) {
+      let [existing] = await tx.select().from(tags)
+        .where(and(eq(tags.userId, user.id), eq(tags.name, name)));
+      if (!existing) {
+        const tid = ulid();
+        await tx.insert(tags).values({ id: tid, userId: user.id, name });
+        existing = { id: tid, userId: user.id, name };
+      }
+      await tx.insert(bookmarkTags).values({ bookmarkId: id, tagId: existing.id });
+    }
+  });
+  return c.redirect("/app?flash=updated", 302);
 });
