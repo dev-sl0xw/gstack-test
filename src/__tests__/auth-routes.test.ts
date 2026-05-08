@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import { db } from "../db/client.ts";
-import { createApp } from "../app.ts";
+import { createApp } from "../app.tsx";
 
 beforeAll(async () => {
   await migrate(db, { migrationsFolder: "./src/db/migrations" });
