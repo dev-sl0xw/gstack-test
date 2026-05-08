@@ -2,3 +2,8 @@
 .DS_Store
 .gstack/
 AGENTS.md
+node_modules/
+dist/
+*.db
+*.db-journal
+.env
