@@ -12,7 +12,11 @@ export function createApp() {
   app.use("/styles.css", serveStatic({ path: "./public/styles.css" }));
   app.use("/htmx.min.js", serveStatic({ path: "./public/htmx.min.js" }));
   app.use("*", attachAuth);
-  app.get("/", (c) => c.html(<Landing user={c.get("user")} />));
+  app.get("/", (c) => {
+    const user = c.get("user");
+    if (!user) c.header("Cache-Control", "public, max-age=300");
+    return c.html(<Landing user={user} />);
+  });
   app.get("/healthz", (c) => c.text("ok"));
   app.route("/auth", auth);
   app.route("/app", appRoutes);
