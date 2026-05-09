@@ -5,6 +5,7 @@ import { auth } from "./routes/auth.tsx";
 import { appRoutes } from "./routes/app.tsx";
 import { pub } from "./routes/public.tsx";
 import { Landing } from "./views/landing.tsx";
+import { NotFound } from "./views/not-found.tsx";
 
 export function createApp() {
   const app = new Hono<{ Variables: AuthVars }>();
@@ -16,5 +17,6 @@ export function createApp() {
   app.route("/auth", auth);
   app.route("/app", appRoutes);
   app.route("/", pub);
+  app.notFound((c) => c.html(<NotFound />, 404));
   return app;
 }

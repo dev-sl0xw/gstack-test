@@ -1,5 +1,12 @@
 import { Layout } from "./layout.tsx";
 
+const FLASH_MESSAGES: Record<string, string> = {
+  added: "북마크를 추가했어요",
+  updated: "북마크를 수정했어요",
+  deleted: "북마크를 삭제했어요",
+  invalid: "입력값을 확인해주세요",
+};
+
 export type DashBookmark = {
   id: string;
   url: string;
@@ -28,7 +35,7 @@ export function Dashboard({
 
       <main class="dash">
         <h1>내 북마크</h1>
-        {flash ? <p class="flash">{flash}</p> : null}
+        {flash ? <p class="flash">{FLASH_MESSAGES[flash] ?? flash}</p> : null}
 
         <form method="post" action="/app/bookmarks" class="add">
           <input type="hidden" name="_csrf" value={csrfToken} />
@@ -50,10 +57,13 @@ export function Dashboard({
                     {b.tags.map((t) => <span class="tag">#{t}</span>)}
                     {b.isPublic ? <span class="badge">공개</span> : null}
                   </div>
-                  <form method="post" action={`/app/bookmarks/${b.id}/delete`} style="display:inline">
-                    <input type="hidden" name="_csrf" value={csrfToken} />
-                    <button type="submit">삭제</button>
-                  </form>
+                  <div class="actions">
+                    <a href={`/app/bookmarks/${b.id}/edit`} class="action">수정</a>
+                    <form method="post" action={`/app/bookmarks/${b.id}/delete`} style="display:inline">
+                      <input type="hidden" name="_csrf" value={csrfToken} />
+                      <button type="submit">삭제</button>
+                    </form>
+                  </div>
                 </li>
               ))}
             </ul>

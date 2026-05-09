@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "../db/client.ts";
 import { bookmarks, tags, bookmarkTags } from "../db/schema.ts";
-import { bookmarkInputSchema } from "../lib/validate.ts";
+import { bookmarkInputSchema, urlInputSchema } from "../lib/validate.ts";
 import { ulid } from "../lib/ids.ts";
 import { now } from "../lib/time.ts";
 import { fetchOgMeta } from "../lib/og-fetch.ts";
@@ -135,14 +135,16 @@ appRoutes.post("/bookmarks/:id", async (c) => {
   const description = String(form.description ?? "").trim().slice(0, 500) || null;
   const tagsStr = String(form.tags ?? "");
   const isPublic = form.is_public === "on" ? 1 : 0;
-  if (!title) return c.redirect(`/app/bookmarks/${id}/edit`, 302);
+  const urlParsed = urlInputSchema.safeParse(String(form.url ?? ""));
+  if (!title || !urlParsed.success) return c.redirect(`/app/bookmarks/${id}/edit`, 302);
+  const url = urlParsed.data;
 
   await db.transaction(async (tx) => {
     const [own] = await tx.select({ id: bookmarks.id }).from(bookmarks)
       .where(and(eq(bookmarks.id, id), eq(bookmarks.userId, user.id)));
     if (!own) return;
     await tx.update(bookmarks)
-      .set({ title, description, isPublic, updatedAt: now() })
+      .set({ url, title, description, isPublic, updatedAt: now() })
       .where(eq(bookmarks.id, id));
     await tx.delete(bookmarkTags).where(eq(bookmarkTags.bookmarkId, id));
     const tagNames = tagsStr.split(",").map(s => s.trim().toLowerCase())

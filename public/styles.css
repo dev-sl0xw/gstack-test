@@ -27,10 +27,13 @@ a { overflow-wrap: anywhere; }
 .empty { color: var(--muted); text-align: center; padding: 2rem; }
 ul.bookmarks { list-style: none; padding: 0; }
 ul.bookmarks li { padding: 1rem 0; border-bottom: 1px solid var(--border); word-break: break-word; }
+.actions { display: flex; gap: .5rem; align-items: center; margin-top: .5rem; }
+.actions .action { padding: .5rem 1rem; border: 1px solid var(--border); border-radius: 4px; text-decoration: none; color: var(--fg); min-height: 44px; display: inline-flex; align-items: center; }
 .meta { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .25rem; }
 .tag { background: var(--tag-bg); color: var(--accent); padding: 0 .5rem; border-radius: 999px; font-size: .85em; }
 .badge { background: #fef3c7; color: #92400e; padding: 0 .5rem; border-radius: 999px; font-size: .85em; }
 @media (max-width: 480px) {
   main { margin: 1rem auto; }
   form.add { flex-direction: column; }
+  form.add input[type="url"] { flex: 0 0 auto; }
 }
