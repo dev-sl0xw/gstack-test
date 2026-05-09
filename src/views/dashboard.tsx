@@ -61,7 +61,7 @@ export function Dashboard({
                     <a href={`/app/bookmarks/${b.id}/edit`} class="action">수정</a>
                     <form method="post" action={`/app/bookmarks/${b.id}/delete`} style="display:inline">
                       <input type="hidden" name="_csrf" value={csrfToken} />
-                      <button type="submit">삭제</button>
+                      <button type="submit" class="danger">삭제</button>
                     </form>
                   </div>
                 </li>
