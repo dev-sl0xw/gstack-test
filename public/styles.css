@@ -21,7 +21,7 @@ form.add { display: flex; flex-wrap: wrap; gap: .5rem; }
 form.add input[type="url"] { flex: 1 1 280px; min-width: 0; }
 input, textarea, button { font: inherit; padding: .5rem; border: 1px solid var(--border); border-radius: 4px; }
 button { background: var(--accent); color: #fff; border: 0; cursor: pointer; min-height: 44px; padding: .75rem 1rem; }
-a { overflow-wrap: anywhere; }
+a { color: var(--accent); overflow-wrap: anywhere; }
 .error { color: var(--error); }
 .flash { background: #ecfdf5; border: 1px solid #6ee7b7; padding: .5rem 1rem; border-radius: 4px; }
 .empty { color: var(--muted); text-align: center; padding: 2rem; }
