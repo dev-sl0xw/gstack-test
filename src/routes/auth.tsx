@@ -45,13 +45,13 @@ auth.post("/signup", async (c) => {
 auth.post("/login", async (c) => {
   const form = await c.req.parseBody();
   const parsed = loginSchema.safeParse(form);
-  if (!parsed.success) return c.html(<LoginForm error="invalid credentials" />, 400);
+  if (!parsed.success) return c.html(<LoginForm error="이메일 또는 비밀번호가 올바르지 않아요" />, 400);
 
   const [user] = await db.select().from(users).where(eq(users.email, parsed.data.email));
-  if (!user) return c.html(<LoginForm error="invalid credentials" />, 400);
+  if (!user) return c.html(<LoginForm error="이메일 또는 비밀번호가 올바르지 않아요" />, 400);
 
   const ok = await verifyPassword(user.passwordHash, parsed.data.password);
-  if (!ok) return c.html(<LoginForm error="invalid credentials" />, 400);
+  if (!ok) return c.html(<LoginForm error="이메일 또는 비밀번호가 올바르지 않아요" />, 400);
 
   const sid = await createSession(user.id);
   setSessionCookie(c, sid);
