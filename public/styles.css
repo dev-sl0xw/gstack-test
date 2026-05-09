@@ -8,7 +8,7 @@
   --accent: #2563eb;
   --error: #b91c1c;
   --tag-bg: #eef2ff;
-  --font-sans: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   font-family: var(--font-sans);
 }
 * { box-sizing: border-box; }
